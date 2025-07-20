@@ -1,0 +1,248 @@
+definitions:
+  auth.LoginRequest:
+    properties:
+      login:
+        maxLength: 50
+        type: string
+      password:
+        maxLength: 72
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  auth.RegisterRequest:
+    properties:
+      login:
+        maxLength: 50
+        minLength: 3
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  httputil.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  listing.CreateListingRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      image_url:
+        type: string
+      price:
+        maximum: 100000000000
+        minimum: 0
+        type: integer
+      title:
+        maxLength: 200
+        minLength: 5
+        type: string
+    required:
+    - image_url
+    - price
+    - title
+    type: object
+  models.Listing:
+    properties:
+      author_login:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      is_owner:
+        type: boolean
+      price:
+        type: integer
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.ListingsFeed:
+    properties:
+      limit:
+        type: integer
+      listings:
+        items:
+          $ref: '#/definitions/models.Listing'
+        type: array
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.UserPublic:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      login:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: Marketplace API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      parameters:
+      - description: User login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            $ref: '#/definitions/models.UserPublic'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+      summary: User login
+  /auth/register:
+    post:
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/models.UserPublic'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+      summary: Register a new user
+  /listing:
+    post:
+      parameters:
+      - description: Listing creation data
+        in: body
+        name: listing
+        required: true
+        schema:
+          $ref: '#/definitions/listing.CreateListingRequest'
+      responses:
+        "201":
+          description: Listing created successfully
+          schema:
+            $ref: '#/definitions/models.Listing'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new listing
+  /listing/feed:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: createdAt
+        description: Sort by field (createdAt or price)
+        enum:
+        - createdAt
+        - price
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort order (asc or desc)
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
+      - description: Minimum price in kopecks
+        in: query
+        minimum: 0
+        name: minPrice
+        type: integer
+      - description: Maximum price in kopecks
+        in: query
+        minimum: 0
+        name: maxPrice
+        type: integer
+      responses:
+        "200":
+          description: Successfully retrieved listing feed
+          schema:
+            $ref: '#/definitions/models.ListingsFeed'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a feed of listings
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" + your JWT token in the input box below."
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  app_test:
+    build: .
+    container_name: mp_app_test
+    ports:
+      - "8000:8000" # HTTP API
+    depends_on:
+      postgres_test:
+        condition: service_healthy
+    env_file:
+      - .env.test
+    volumes:
+      - ./.env.test:/app/.env
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+    networks:
+      - marketplace_test_network
+
+  postgres_test:
+    image: postgres:17-alpine
+    container_name: mp_postgres_test
+    env_file:
+      - .env.test
+    volumes:
+      - ./deployments/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+    networks:
+      - marketplace_test_network
+
+volumes:
+  postgres_test_data:
+    driver: local
+
+networks:
+  marketplace_test_network:
+    driver: bridge

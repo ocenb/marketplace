@@ -1,0 +1,10 @@
+*
+
+!/cmd/marketplace/
+!/internal/
+!/docs/
+!go.mod
+!go.sum
+
+**/mocks/
+**/*_test.go
