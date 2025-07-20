@@ -2,6 +2,9 @@
 
 RESTful сервис, имитирующий торговую площадку.
 
+- HTTP API https://marketplace.musicapp.fun
+- Документация https://marketplace.musicapp.fun/swagger/index.html
+
 ## Реализованный функционал
 
 - **Авторизация:**
@@ -47,8 +50,8 @@ RESTful сервис, имитирующий торговую площадку.
     docker compose up -d --build
     ```
 
-    - HTTP API `http://localhost:8080`.
-    - Документация `http://localhost:8080/swagger/index.html`.
+    - HTTP API http://localhost:8080
+    - Документация http://localhost:8080/swagger/index.html
 
 4.  **Остановка:**
     ```bash
